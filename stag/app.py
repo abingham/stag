@@ -110,9 +110,12 @@ def scan_definitions_command(dir, filename):
         # Shut everything down.
         ActorRegistry.stop_all()
 
-if __name__ == '__main__':
+def main():
     import sys
     logging.basicConfig(
         level=logging.WARNING,
         stream=sys.stdout)
     baker.run()
+
+if __name__ == '__main__':
+    main()

@@ -18,11 +18,11 @@ setup(
     keywords = 'source indexing',
     url = 'http://github.com/abingham/stag',
 
-#    entry_points = {
-#        'console_scripts': [
-#            '{} = traad.server:main'.format(script_name),
-#            ],
-#        },
+    entry_points = {
+        'console_scripts': [
+            'stag = stag.app:main',
+            ],
+        },
 
     install_requires=[
         'baker',
