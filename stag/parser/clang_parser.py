@@ -2,6 +2,8 @@ class Parser:
     """A parser for C/C++ code which uses an external clang-based
     tool.
 
+    This is obviously still a work in progress...nothing to see here...
+
     """
 
     def __init__(self):
