@@ -11,7 +11,8 @@ class DefinitionVisitor(ast.NodeVisitor):
         self.generic_visit(node)
 
     def visit_ClassDef(self, node):
-        self.definitions.append((node.name, node.lineno))
+        class_name = '.'.join(self.classes + [node.name])
+        self.definitions.append((class_name, node.lineno))
         self.classes.append(node.name)
         self.generic_visit(node)
         self.classes = self.classes[:-1]

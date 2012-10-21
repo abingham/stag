@@ -57,3 +57,19 @@ def func2(): pass
             self.assertIn(
                 d,
                 v.definitions)
+
+    def test_nested_class_method(self):
+        v = parse('''
+class Foo:
+  class Bar:
+    def baz(self): pass
+''')
+        defs = (
+            ('Foo', 2),
+            ('Foo.Bar', 3),
+            ('Foo.Bar.baz', 4),
+            )
+        for d in defs:
+            self.assertIn(
+                d,
+                v.definitions)
