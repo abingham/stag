@@ -2,15 +2,19 @@ import ast
 
 class DefinitionVisitor(ast.NodeVisitor):
     def __init__(self):
+        self.classes = []
         self.definitions = []
 
     def visit_FunctionDef(self, node):
-        self.definitions.append((node.name, node.lineno))
+        func_name = '.'.join(self.classes + [node.name])
+        self.definitions.append((func_name, node.lineno))
         self.generic_visit(node)
 
     def visit_ClassDef(self, node):
         self.definitions.append((node.name, node.lineno))
+        self.classes.append(node.name)
         self.generic_visit(node)
+        self.classes = self.classes[:-1]
 
 class Parser:
     def __init__(self):
