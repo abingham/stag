@@ -7,13 +7,13 @@ class Plugin:
 
     def patterns(self):
         return [
-            '.*\.cpp',
-            '.*\.cc',
-            '.*\.cxx',
-            '.*\.c',
-            '.*\.hpp',
-            '.*\.h',
-            '.*\.hxx',
+            '*.cpp',
+            '*.cc',
+            '*.cxx',
+            '*.c',
+            '*.hpp',
+            '*.h',
+            '*.hxx',
         ]
 
     def create_parser(self):

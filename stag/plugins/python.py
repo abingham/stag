@@ -7,7 +7,7 @@ class Plugin:
 
     def patterns(self):
         return [
-            '.*\.py',
+            '*.py',
             # TODO: pyx? SConstruct/script?
         ]
 

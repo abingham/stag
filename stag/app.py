@@ -6,12 +6,11 @@ import re
 import sys
 
 import baker
+import pkg_resources
 from pykka.actor import Actor
 from pykka.gevent import GeventActor
 from pykka.registry import ActorRegistry
 
-# TODO: This will go away when we move to a plugin-parser system
-from stag.parser import python_ast_parser
 from stag.storage import Sqlite3Storage as Storage
 from stag.util import consume
 
@@ -24,9 +23,12 @@ class DispatcherActor(GeventActor):
         self.parser_map = parser_map
 
     def find_parser(self, filename):
-        for pattern, parser in self.parser_map.items():
-            if fnmatch.fnmatch(filename, pattern):
-                return parser
+        for patterns, parser in self.parser_map:
+            for pattern in patterns:
+                if fnmatch.fnmatch(filename, pattern):
+                    log.info('{} matched pattern {} for parser {}'.format(
+                        filename, pattern, parser))
+                    return parser
 
     def dispatch(self, filename):
         parser = self.find_parser(filename)
@@ -96,6 +98,17 @@ def init_logging(verbose):
         level=level,
         stream=sys.stdout)
 
+def parser_plugins():
+    log.info('Loading parser plugins.')
+
+    for entry_point in pkg_resources.iter_entry_points('stag.parser'):
+        plugin_class = entry_point.load()
+
+        log.info('Plugin detected: {}'.format(plugin_class))
+
+        plugin = plugin_class()
+        yield plugin
+
 @baker.command(name='scan_defs')
 def scan_definitions_command(dir, filename, verbose=False):
     init_logging(verbose)
@@ -104,10 +117,10 @@ def scan_definitions_command(dir, filename, verbose=False):
         s.clear_defs()
 
         storage = StorageActor.start(s)
-
-        parser_map = {
-            '*.py': ParserActor.start(python_ast_parser.Parser(), storage),
-        }
+        parser_map = [
+            (list(p.patterns()),
+             ParserActor.start(p.create_parser(), storage))
+            for p in parser_plugins()]
 
         dispatcher = DispatcherActor.start(parser_map)
 
