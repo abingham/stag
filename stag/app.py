@@ -1,66 +1,118 @@
+from itertools import chain
+import fnmatch
+import logging
 import os
-import sqlite
 
 import baker
+from pykka.actor import Actor, ThreadingActor
+from pykka.registry import ActorRegistry
 
-# TODO: Use ABC for IndexStorage?
+# TODO: This will go away when we move to a plugin-parser system
+import stag.python_ast_parser
+from stag.storage import PrintStorage as Storage
+from stag.util import consume
 
-def consume(iter):
-    for _ in iter: pass
+log = logging.getLogger(__file__)
 
-class IndexStorage:
-    "Interface definition for index storage."
-    def clear_defs(self):
-        "Clear out storage."
-        pass
+class DispatcherActor(ThreadingActor):
+    """Actor for dispatching filenames to the proper parser."""
 
-    def add_def(self, name, filename, lineno):
-        "Add a new definition."
-        pass
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, t, b, tb):
-        pass
-
-class Sqlite3Storage:
-    def __init__(self, filename):
-        self.filename = filename
-
-    def clear_defs(self):
-        pass
-
-    def add_def(self, name, filename, lineno):
-        pass
-
-    def __enter__(self):
-        self.conn = sqlite3.connet(self.filename)
-
-    def __exit__(self, t, v, tb):
-        self.conn.close()
-
-class Scanner:
-    def __init__(self, storage, parser_map):
-        self.storage = storage
+    def __init__(self, parser_map):
         self.parser_map = parser_map
 
-    def find_parser(self, fname):
+    def find_parser(self, filename):
         for pattern, parser in self.parser_map.items():
-            if re.match(pattern, fname):
+            if fnmatch.fnmatch(filename, pattern):
                 return parser
 
-    def scan_defs(self, dirpath, dirnames, filenames):
-        for fname in filenames:
-            parser = self.find_parser(fname)
-            if parser:
-                parser.set_file(fname)
-                for name, lineno in parser.definitions():
-                    self.storage.add_def(name, fname, lineno)
+    def dispatch(self, filename):
+        parser = self.find_parser(filename)
+        if parser:
+            parser.tell({
+                'command': 'parse',
+                'filename': filename
+                })
+        else:
+            log.warning('No parser for filename: {}'.format(filename))
+
+    def on_receive(self, message):
+        if message.get('command') == 'dispatch':
+            self.dispatch(message['filename'])
+
+        else:
+            log.error('Dispatcher received unexpected message type: {}'.format(
+                message))
+
+class ParserActor(ThreadingActor):
+    """Actor for parsing files."""
+
+    def __init__(self, parser, storage):
+        self.parser = parser
+        self.storage = storage
+
+    def on_receive(self, message):
+        if message.get('command') == 'parse':
+            fname = message['filename']
+            self.parser.set_file(fname)
+            for d in self.parser.definitions():
+                self.storage.tell({
+                    'command': 'store_def',
+                    'name': d[0],
+                    'filename': fname,
+                    'lineno': d[1]
+                })
+
+        else:
+            log.error('ParserActor received unexpected message: {}'.format(
+                message))
+
+class StorageActor(ThreadingActor):
+    """Actor for managing storage."""
+
+    def __init__(self, storage):
+        self.storage = storage
+
+    def on_receive(self, message):
+        if message.get('command') == 'store_def':
+            self.storage.add_def(
+                message['name'],
+                message['filename'],
+                message['lineno'])
+
+        else:
+            log.error('StorageActor received unexpeted message: {}'.format(
+                message))
 
 @baker.command(name='scan_defs')
 def scan_definitions_command(dir, filename):
-    with Sqlite3Storage(filename) as storage:
-        scanner = Scanner(storage)
-        storage.clear_defs()
-        consume(map(scanner.scan_defs, os.walk(dir)))
+    with Storage() as s:
+        s.clear_defs()
+
+        storage = StorageActor.start(s)
+
+        parser_map = {
+            '*.py': ParserActor.start(stag.python_ast_parser.Parser(), storage),
+        }
+
+        dispatcher = DispatcherActor.start(parser_map)
+
+        # Send results of os.walk to the dispatcher
+        def dispatch_file(args):
+            dirpath, dirnames, filenames = args
+            for fname in filenames:
+                dispatcher.tell({
+                    'command': 'dispatch',
+                    'filename': os.path.join(dirpath, fname)
+        })
+
+        consume(map(dispatch_file, os.walk(dir)))
+
+        # Shut everything down.
+        ActorRegistry.stop_all()
+
+if __name__ == '__main__':
+    import sys
+    logging.basicConfig(
+        level=logging.DEBUG,
+        stream=sys.stdout)
+    baker.run()

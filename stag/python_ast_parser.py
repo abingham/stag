@@ -38,12 +38,14 @@ class Parser:
             with open(self.fname) as f:
                 source = f.read()
 
-            self.ast = ast.parse(source, filename=self.fname)
+            self._ast = ast.parse(source, filename=self.fname)
+        return self._ast
 
     @property
     def visitor(self):
         if self._visitor is None:
-            self._visitor = DefinitionVisitor(self.ast)
+            self._visitor = DefinitionVisitor()
+            self._visitor.visit(self.ast)
         return self._visitor
 
     @property
