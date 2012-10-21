@@ -2,6 +2,7 @@ from itertools import chain
 import fnmatch
 import logging
 import os
+import re
 import sys
 
 import baker
@@ -132,6 +133,16 @@ def find_definitions_command(filename, name, verbose=False):
         for name, filename, lineno in s.find_definitions(name):
             print('{}:{}: {}'.format(
                 filename, lineno, name))
+
+@baker.command(name='match_defs')
+def match_definitions_command(filename, pattern, verbose=False):
+    init_logging(verbose)
+
+    with Storage(filename) as s:
+        for name, filename, lineno in s.definitions():
+            if re.match(pattern, name):
+                print('{}:{}: {}'.format(
+                    filename, lineno, name))
 
 def main():
     baker.run()
