@@ -5,9 +5,11 @@ class DefinitionVisitor(ast.NodeVisitor):
         self.definitions = []
 
     def visit_FunctionDef(self, node):
+        self.definitions.append((node.name, node.lineno))
         self.generic_visit(node)
 
     def visit_ClassDef(self, node):
+        self.definitions.append((node.name, node.lineno))
         self.generic_visit(node)
 
 class Parser:
@@ -34,3 +36,4 @@ class Parser:
         self._ast = None
 
     def definitions(self):
+        pass
