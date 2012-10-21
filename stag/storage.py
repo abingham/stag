@@ -1,4 +1,7 @@
+import logging
 import sqlite3
+
+log = logging.getLogger(__file__)
 
 # TODO: Use ABC for IndexStorage?
 
@@ -55,6 +58,7 @@ class Sqlite3Storage:
         if self.conn is None:
             self.conn = sqlite3.connect(self.filename)
             self.conn.row_factory = sqlite3.Row
+            self.conn.isolation_level = 'EXCLUSIVE'
             cur = self.conn.cursor()
             cur.execute(
                 '''CREATE TABLE IF NOT EXISTS definitions
@@ -63,6 +67,7 @@ class Sqlite3Storage:
                 'CREATE INDEX IF NOT EXISTS name_index ON definitions(name)')
 
     def close(self):
+        self.conn.commit()
         self.conn.close()
 
     def clear_defs(self):
@@ -70,6 +75,10 @@ class Sqlite3Storage:
         cur.execute('DELETE FROM definitions')
 
     def add_def(self, name, filename, lineno):
+        log.info(
+            'Sqlite3Storage.add_def(name={}, filename={}, lineno={})'.format(
+                name, filename, lineno))
+
         cur = self.conn.cursor()
         cur.execute('INSERT INTO definitions VALUES(?,?,?)',
                     (name, filename, lineno))
