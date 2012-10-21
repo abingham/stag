@@ -19,32 +19,12 @@ class IndexStorage:
         "Get iterable of all definitions in storage."
         pass
 
+    def find_definitions(self, name):
+        "Get all definitions for a given name."
+        pass
+
     def __enter__(self):
         pass
-
-    def __exit__(self, t, b, tb):
-        pass
-
-class PrintStorage:
-    """This is for debugging purposes only. It does not actually
-    work.
-
-    """
-
-    def __init__(self, filename):
-        pass
-
-    def clear_defs(self):
-        pass
-
-    def add_def(self, name, filename, lineno):
-        print('{}:{}: {}'.format(filename, lineno, name))
-
-    def definitions(self):
-        return []
-
-    def __enter__(self):
-        return self
 
     def __exit__(self, t, b, tb):
         pass
@@ -86,6 +66,13 @@ class Sqlite3Storage:
     def definitions(self):
         cur = self.conn.cursor()
         cur.execute('SELECT * FROM definitions')
+        for row in cur:
+            yield (row['name'], row['filename'], row['lineno'])
+
+    def find_definitions(self, name):
+        cur = self.conn.cursor()
+        cur.execute('SELECT * FROM definitions WHERE name=?',
+                    (name,))
         for row in cur:
             yield (row['name'], row['filename'], row['lineno'])
 

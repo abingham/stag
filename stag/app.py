@@ -124,6 +124,15 @@ def scan_definitions_command(dir, filename, verbose=False):
         # Shut everything down.
         ActorRegistry.stop_all()
 
+@baker.command(name='find_defs')
+def find_definitions_command(filename, name, verbose=False):
+    init_logging(verbose)
+
+    with Storage(filename) as s:
+        for name, filename, lineno in s.find_definitions(name):
+            print('{}:{}: {}'.format(
+                filename, lineno, name))
+
 def main():
     baker.run()
 
