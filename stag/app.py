@@ -2,19 +2,21 @@ from itertools import chain
 import fnmatch
 import logging
 import os
+import sys
 
 import baker
-from pykka.actor import Actor, ThreadingActor
+from pykka.actor import Actor
+from pykka.gevent import GeventActor
 from pykka.registry import ActorRegistry
 
 # TODO: This will go away when we move to a plugin-parser system
 import stag.python_ast_parser
-from stag.storage import PrintStorage as Storage
+from stag.storage import Sqlite3Storage as Storage
 from stag.util import consume
 
 log = logging.getLogger(__file__)
 
-class DispatcherActor(ThreadingActor):
+class DispatcherActor(GeventActor):
     """Actor for dispatching filenames to the proper parser."""
 
     def __init__(self, parser_map):
@@ -43,7 +45,7 @@ class DispatcherActor(ThreadingActor):
             log.error('Dispatcher received unexpected message type: {}'.format(
                 message))
 
-class ParserActor(ThreadingActor):
+class ParserActor(GeventActor):
     """Actor for parsing files."""
 
     def __init__(self, parser, storage):
@@ -66,7 +68,7 @@ class ParserActor(ThreadingActor):
             log.error('ParserActor received unexpected message: {}'.format(
                 message))
 
-class StorageActor(ThreadingActor):
+class StorageActor(GeventActor):
     """Actor for managing storage."""
 
     def __init__(self, storage):
@@ -83,8 +85,20 @@ class StorageActor(ThreadingActor):
             log.error('StorageActor received unexpeted message: {}'.format(
                 message))
 
+def init_logging(verbose):
+    if verbose:
+        level = logging.INFO
+    else:
+        level = logging.WARNING
+
+    logging.basicConfig(
+        level=level,
+        stream=sys.stdout)
+
 @baker.command(name='scan_defs')
-def scan_definitions_command(dir, filename):
+def scan_definitions_command(dir, filename, verbose=False):
+    init_logging(verbose)
+
     with Storage(filename) as s:
         s.clear_defs()
 
@@ -111,10 +125,6 @@ def scan_definitions_command(dir, filename):
         ActorRegistry.stop_all()
 
 def main():
-    import sys
-    logging.basicConfig(
-        level=logging.WARNING,
-        stream=sys.stdout)
     baker.run()
 
 if __name__ == '__main__':
