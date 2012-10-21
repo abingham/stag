@@ -1,6 +1,11 @@
 import ast
 
 class DefinitionVisitor(ast.NodeVisitor):
+    """An ast.NodeVisitor that gathers information about function and
+    class definitions.
+
+    """
+
     def __init__(self):
         self.classes = []
         self.definitions = []
@@ -18,9 +23,12 @@ class DefinitionVisitor(ast.NodeVisitor):
         self.classes = self.classes[:-1]
 
 class Parser:
+    """A parser for Python source code which uses the `ast` module."""
+
     def __init__(self):
         self._fname = None
         self._ast = None
+        self._visitor = None
 
     @property
     def ast(self):
@@ -33,12 +41,19 @@ class Parser:
             self.ast = ast.parse(source, filename=self.fname)
 
     @property
+    def visitor(self):
+        if self._visitor is None:
+            self._visitor = DefinitionVisitor(self.ast)
+        return self._visitor
+
+    @property
     def fname(self):
         return self._fname
 
     def set_file(self, fname):
         self._fname = fname
         self._ast = None
+        self._visitor = None
 
     def definitions(self):
-        pass
+        return iter(self.visitor.definitions)
