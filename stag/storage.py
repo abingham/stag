@@ -12,6 +12,10 @@ class IndexStorage:
         "Add a new definition."
         pass
 
+    def definitions(self):
+        "Get iterable of all definitions in storage."
+        pass
+
     def __enter__(self):
         pass
 
@@ -19,6 +23,9 @@ class IndexStorage:
         pass
 
 class PrintStorage:
+    def __init__(self, filename):
+        pass
+
     def clear_defs(self):
         pass
 
@@ -39,15 +46,31 @@ class Sqlite3Storage:
     def connect(self):
         if self.conn is None:
             self.conn = sqlite3.connect(self.filename)
+            self.conn.row_factory = sqlite3.Row
+            cur = self.conn.cursor()
+            cur.execute(
+                '''CREATE TABLE IF NOT EXISTS definitions
+                (name text, filename text, lineno int)''')
+            cur.execute(
+                'CREATE INDEX IF NOT EXISTS name_index ON definitions(name)')
 
     def close(self):
         self.conn.close()
 
     def clear_defs(self):
-        pass
+        cur = self.conn.cursor()
+        cur.execute('DELETE FROM definitions')
 
     def add_def(self, name, filename, lineno):
-        pass
+        cur = self.conn.cursor()
+        cur.execute('INSERT INTO definitions VALUES(?,?,?)',
+                    (name, filename, lineno))
+
+    def definitions(self):
+        cur = self.conn.cursor()
+        cur.execute('SELECT * FROM definitions')
+        for row in cur:
+            yield (row['name'], row['filename'], row['lineno'])
 
     def __enter__(self):
         self.connect()

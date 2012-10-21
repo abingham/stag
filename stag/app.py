@@ -85,7 +85,7 @@ class StorageActor(ThreadingActor):
 
 @baker.command(name='scan_defs')
 def scan_definitions_command(dir, filename):
-    with Storage() as s:
+    with Storage(filename) as s:
         s.clear_defs()
 
         storage = StorageActor.start(s)
