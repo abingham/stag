@@ -1,7 +1,7 @@
 import ast
 import unittest
 
-from stag.python_ast_parser import DefinitionVisitor
+from stag.parser.python_ast_parser import DefinitionVisitor
 
 def parse(source):
     tree = ast.parse(source)
