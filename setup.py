@@ -21,8 +21,13 @@ setup(
     entry_points = {
         'console_scripts': [
             'stag = stag.app:main',
-            ],
-        },
+        ],
+
+        'stag.parser': [
+            'stag.python = stag.plugins.python:Plugin',
+            'stag.clang = stag.plugins.clang:Plugin',
+        ]
+    },
 
     install_requires=[
         'baker',

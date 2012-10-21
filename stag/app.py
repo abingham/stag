@@ -11,7 +11,7 @@ from pykka.gevent import GeventActor
 from pykka.registry import ActorRegistry
 
 # TODO: This will go away when we move to a plugin-parser system
-import stag.python_ast_parser
+from stag.parser import python_ast_parser
 from stag.storage import Sqlite3Storage as Storage
 from stag.util import consume
 
@@ -106,7 +106,7 @@ def scan_definitions_command(dir, filename, verbose=False):
         storage = StorageActor.start(s)
 
         parser_map = {
-            '*.py': ParserActor.start(stag.python_ast_parser.Parser(), storage),
+            '*.py': ParserActor.start(python_ast_parser.Parser(), storage),
         }
 
         dispatcher = DispatcherActor.start(parser_map)
