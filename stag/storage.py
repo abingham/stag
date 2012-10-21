@@ -23,6 +23,11 @@ class IndexStorage:
         pass
 
 class PrintStorage:
+    """This is for debugging purposes only. It does not actually
+    work.
+
+    """
+
     def __init__(self, filename):
         pass
 
@@ -31,6 +36,9 @@ class PrintStorage:
 
     def add_def(self, name, filename, lineno):
         print('{}:{}: {}'.format(filename, lineno, name))
+
+    def definitions(self):
+        return []
 
     def __enter__(self):
         return self
