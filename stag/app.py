@@ -33,7 +33,7 @@ class DispatcherActor(ThreadingActor):
                 'filename': filename
                 })
         else:
-            log.warning('No parser for filename: {}'.format(filename))
+            log.info('No parser for filename: {}'.format(filename))
 
     def on_receive(self, message):
         if message.get('command') == 'dispatch':
@@ -113,6 +113,6 @@ def scan_definitions_command(dir, filename):
 if __name__ == '__main__':
     import sys
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.WARNING,
         stream=sys.stdout)
     baker.run()
