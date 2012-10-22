@@ -33,5 +33,6 @@ setup(
         'baker',
         'gevent',
         'pykka',
+        'sqlalchemy',
     ],
 )

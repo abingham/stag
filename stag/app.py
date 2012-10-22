@@ -11,7 +11,7 @@ from pykka.actor import Actor
 from pykka.gevent import GeventActor
 from pykka.registry import ActorRegistry
 
-from stag.storage import Sqlite3Storage as Storage
+from stag.storage.sqlalchemy_storage import SqlAlchemyStorage as Storage
 from stag.util import consume
 
 log = logging.getLogger(__file__)
