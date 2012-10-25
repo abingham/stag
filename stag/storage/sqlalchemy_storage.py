@@ -79,7 +79,7 @@ class SqlAlchemyStorage:
                 name, filename, lineno))
 
         self.session.add(
-            References(
+            Reference(
                 name=name,
                 filename=filename,
                 lineno=lineno))
