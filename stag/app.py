@@ -120,7 +120,7 @@ def parser_plugins():
         yield plugin
 
 @baker.command(name='scan')
-def scan_command(dir, filename, verbose=False):
+def scan_command(dir, filename='STAG', verbose=False):
     init_logging(verbose)
 
     with Storage(filename) as s:
@@ -149,7 +149,7 @@ def scan_command(dir, filename, verbose=False):
         ActorRegistry.stop_all()
 
 @baker.command(name='find_defs')
-def find_definitions_command(filename, name, verbose=False):
+def find_definitions_command(name, filename='STAG', verbose=False):
     init_logging(verbose)
 
     with Storage(filename) as s:
@@ -158,11 +158,30 @@ def find_definitions_command(filename, name, verbose=False):
                 filename, lineno, name))
 
 @baker.command(name='match_defs')
-def match_definitions_command(filename, pattern, verbose=False):
+def match_definitions_command(pattern, filename='STAG', verbose=False):
     init_logging(verbose)
 
     with Storage(filename) as s:
         for name, filename, lineno in s.definitions():
+            if re.match(pattern, name):
+                print('{}:{}: {}'.format(
+                    filename, lineno, name))
+
+@baker.command(name='find_refs')
+def find_references_command(name, filename='STAG', verbose=False):
+    init_logging(verbose)
+
+    with Storage(filename) as s:
+        for name, filename, lineno in s.find_references(name):
+            print('{}:{}: {}'.format(
+                filename, lineno, name))
+
+@baker.command(name='match_refs')
+def match_references_command(pattern, filename='STAG', verbose=False):
+    init_logging(verbose)
+
+    with Storage(filename) as s:
+        for name, filename, lineno in s.references():
             if re.match(pattern, name):
                 print('{}:{}: {}'.format(
                     filename, lineno, name))
