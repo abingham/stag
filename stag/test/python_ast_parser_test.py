@@ -1,15 +1,20 @@
 import ast
 import unittest
 
-from stag.parser.python_ast_parser import DefinitionVisitor
+from stag.parser.python_ast_parser import Visitor
 
 def parse(source):
+    """Parse `source`, visit it with a Visitor, and return that
+    Visitor.
+
+    """
     tree = ast.parse(source)
-    v = DefinitionVisitor()
+    v = Visitor()
     v.visit(tree)
     return v
 
-class ReferenceVisitorTests(unittest.TestCase):
+class ReferenceTests(unittest.TestCase):
+    """Reference-detection tests."""
     def test_simple_function(self):
         v = parse(
             '''
@@ -23,6 +28,10 @@ x = lambda y: y + 1
 x(3)
             ''')
 
+        self.assertIn(
+            ('x', 3),
+            v.references)
+
     def test_class_reference(self):
         v = parse(
             '''
@@ -32,8 +41,20 @@ class Llama:
 y = Llama()
             ''')
 
+        self.assertIn(
+            ('Llama', 5),
+            v.references)
 
-class DefinitionVisitorTests(unittest.TestCase):
+    def test_method_reference(self):
+        v = parse('''
+y = foo.bar(yak)
+                  ''')
+        self.assertIn(
+            ('bar', 2),
+            v.references)
+
+class DefinitionTests(unittest.TestCase):
+    """Definition-detection tests."""
     def test_function(self):
         v = parse(
             '''
