@@ -42,15 +42,15 @@ class TreeDump(ast.NodeVisitor):
 
     @recurse
     def visit_Call(self, node):
-        self.show(node, node.func)
+        self.show(node, {'func': node.func})
 
     @recurse
     def visit_Name(self, node):
-        self.show(node, node.id)
+        self.show(node, {'id':node.id})
 
     @recurse
     def visit_Attribute(self, node):
-        self.show(node, node.attr)
+        self.show(node, {'attr':node.attr})
 
     @recurse
     def generic_visit(self, node):
