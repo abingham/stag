@@ -22,6 +22,12 @@ class DefinitionVisitor(ast.NodeVisitor):
         self.generic_visit(node)
         self.classes = self.classes[:-1]
 
+class ReferenceVisitor(ast.NodeVisitor):
+    """As ast.NodeVisitor that gathers information about references to
+    functions and classes.
+
+    """
+
 class Parser:
     """A parser for Python source code which uses the `ast` module."""
 

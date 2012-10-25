@@ -18,6 +18,18 @@ class IndexStorage:
         "Get all definitions for a given name."
         pass
 
+    def add_reference(self, name, filename, lineno):
+        "Add a new reference."
+        pass
+
+    def references(self):
+        "Get iterable of all references in storage."
+        pass
+
+    def find_references(self, name):
+        "Get all references to a given name."
+        pass
+
     def __enter__(self):
         pass
 

@@ -24,6 +24,18 @@ class Definition(Base):
         return '<Definition("{}", "{}", "{}")>'.format(
             self.name, self.filename, self.lineno)
 
+class Reference(Base):
+    __tablename__ = 'references'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    filename = Column(String)
+    lineno = Column(String)
+
+    def __repr__(self):
+        return '<Reference("{}", "{}", "{}")>'.format(
+            self.name, self.filename, self.lineno)
+
 class SqlAlchemyStorage:
     def __init__(self, filename):
         self.filename = filename
@@ -60,6 +72,25 @@ class SqlAlchemyStorage:
     def find_definitions(self, name):
         for d in self.session.query(Definition).filter_by(name=name):
             yield (d.name, d.filename, d.lineno)
+
+    def add_reference(self, name, filename, lineno):
+        log.info(
+            'SqlAlchemyStorage.add_def(name={}, filename={}, lineno={})'.format(
+                name, filename, lineno))
+
+        self.session.add(
+            References(
+                name=name,
+                filename=filename,
+                lineno=lineno))
+
+    def references(self):
+        for r in self.session.query(Reference).all():
+            yield (r.name, r.filename, r.lineno)
+
+    def find_references(self, name):
+        for r in self.session.query(Reference).filter_by(name=name):
+            yield (r.name, r.filename, r.lineno)
 
     def __enter__(self):
         self.connect()
