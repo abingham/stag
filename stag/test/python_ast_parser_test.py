@@ -9,6 +9,30 @@ def parse(source):
     v.visit(tree)
     return v
 
+class ReferenceVisitorTests(unittest.TestCase):
+    def test_simple_function(self):
+        v = parse(
+            '''
+x = llama(a)
+            ''')
+
+    def test_lambda(self):
+        v = parse(
+            '''
+x = lambda y: y + 1
+x(3)
+            ''')
+
+    def test_class_reference(self):
+        v = parse(
+            '''
+class Llama:
+  pass
+
+y = Llama()
+            ''')
+
+
 class DefinitionVisitorTests(unittest.TestCase):
     def test_function(self):
         v = parse(

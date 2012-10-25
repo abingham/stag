@@ -9,6 +9,7 @@ class DefinitionVisitor(ast.NodeVisitor):
     def __init__(self):
         self.classes = []
         self.definitions = []
+        self.references = []
 
     def visit_FunctionDef(self, node):
         func_name = '.'.join(self.classes + [node.name])
@@ -22,11 +23,8 @@ class DefinitionVisitor(ast.NodeVisitor):
         self.generic_visit(node)
         self.classes = self.classes[:-1]
 
-class ReferenceVisitor(ast.NodeVisitor):
-    """As ast.NodeVisitor that gathers information about references to
-    functions and classes.
-
-    """
+    def visit_Call(self, node):
+        print("call: ", node.func.id, node.args, node.keywords, node.starargs, node.kwargs)
 
 class Parser:
     """A parser for Python source code which uses the `ast` module."""
@@ -65,3 +63,6 @@ class Parser:
 
     def definitions(self):
         return iter(self.visitor.definitions)
+
+    def references(self):
+        return iter(self.visitor.references)
