@@ -15,6 +15,7 @@ class TreeDump(ast.NodeVisitor):
     def __init__(self, filename):
         self.fname = filename
         self.depth = 0
+        self.last_line = None
 
     @property
     def indent(self):
@@ -22,30 +23,38 @@ class TreeDump(ast.NodeVisitor):
 
     def get_source_line(self, node):
         try:
-            return linecache.getline(self.fname, node.lineno)
+            line = linecache.getline(self.fname, node.lineno)
+            if line == self.last_line:
+                line = '.'
+            else:
+                self.last_line = line
+            return line
         except AttributeError:
             return ''
 
-    def show(self, node_type, node, *args):
+    def show(self, node, *args):
         print('{:100}{}'.format(
-            '{}[{}] {}'.format(self.indent, node_type.upper(), args),
+            '{}[{}] {}'.format(
+                self.indent,
+                node.__class__.__name__.upper(),
+                args),
             self.get_source_line(node).strip()))
 
     @recurse
     def visit_Call(self, node):
-        self.show('call', node, node.func)
+        self.show(node, node.func)
 
     @recurse
     def visit_Name(self, node):
-        self.show('name', node, node.id)
+        self.show(node, node.id)
 
     @recurse
     def visit_Attribute(self, node):
-        self.show('attribute', node, node.attr)
+        self.show(node, node.attr)
 
     @recurse
     def generic_visit(self, node):
-        self.show(node.__class__.__name__, node)
+        self.show(node)
 
 @baker.command
 def tree(filename):
