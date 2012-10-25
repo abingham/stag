@@ -25,7 +25,6 @@ class Visitor(ast.NodeVisitor):
         self.classes = self.classes[:-1]
 
     def visit_Call(self, node):
-        # self.references.append((node.func.id, node.lineno))
         self.current_call = node
         self.generic_visit(node)
 

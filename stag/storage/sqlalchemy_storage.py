@@ -73,7 +73,7 @@ class SqlAlchemyStorage:
         for d in self.session.query(Definition).filter_by(name=name):
             yield (d.name, d.filename, d.lineno)
 
-    def add_reference(self, name, filename, lineno):
+    def add_ref(self, name, filename, lineno):
         log.info(
             'SqlAlchemyStorage.add_def(name={}, filename={}, lineno={})'.format(
                 name, filename, lineno))

@@ -18,7 +18,7 @@ class IndexStorage:
         "Get all definitions for a given name."
         pass
 
-    def add_reference(self, name, filename, lineno):
+    def add_ref(self, name, filename, lineno):
         "Add a new reference."
         pass
 

@@ -66,7 +66,13 @@ class ParserActor(GeventActor):
                     'filename': fname,
                     'lineno': d[1]
                 })
-
+            for r in self.parser.references():
+                self.storage.tell({
+                    'command': 'store_ref',
+                    'name': r[0],
+                    'filename': fname,
+                    'lineno': r[1]
+                })
         else:
             log.error('ParserActor received unexpected message: {}'.format(
                 message))
@@ -83,7 +89,11 @@ class StorageActor(GeventActor):
                 message['name'],
                 message['filename'],
                 message['lineno'])
-
+        elif message.get('command') == 'store_ref':
+            self.storage.add_ref(
+                message['name'],
+                message['filename'],
+                message['lineno'])
         else:
             log.error('StorageActor received unexpeted message: {}'.format(
                 message))
@@ -109,8 +119,8 @@ def parser_plugins():
         plugin = plugin_class()
         yield plugin
 
-@baker.command(name='scan_defs')
-def scan_definitions_command(dir, filename, verbose=False):
+@baker.command(name='scan')
+def scan_command(dir, filename, verbose=False):
     init_logging(verbose)
 
     with Storage(filename) as s:

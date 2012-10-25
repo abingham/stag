@@ -14,3 +14,7 @@ class Parser:
     def definitions(self):
         "Get iterable of definition tuples (symbol, lineno)."
         pass
+
+    def references(self):
+        "Get an iterable of reference tuples (symbol, lineno)."
+        pass
