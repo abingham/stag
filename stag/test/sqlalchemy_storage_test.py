@@ -1,7 +1,7 @@
 import os
 import unittest
 
-from stag.storage import Sqlite3Storage
+from stag.storage.sqlalchemy_storage import SqlAlchemyStorage
 
 class Tests(unittest.TestCase):
     def setUp(self):
@@ -14,7 +14,7 @@ class Tests(unittest.TestCase):
             pass
 
     def test_construction(self):
-        with Sqlite3Storage(self.fname) as s:
+        with SqlAlchemyStorage(self.fname) as s:
             pass
 
     def _populate(self, s):
@@ -38,11 +38,11 @@ class Tests(unittest.TestCase):
             self.assertIn(d, values)
 
     def test_add_def(self):
-        with Sqlite3Storage(self.fname) as s:
+        with SqlAlchemyStorage(self.fname) as s:
             self._populate(s)
 
     def test_clear_defs(self):
-        with Sqlite3Storage(self.fname) as s:
+        with SqlAlchemyStorage(self.fname) as s:
             self._populate(s)
             s.clear_defs()
             self.assertEqual(
