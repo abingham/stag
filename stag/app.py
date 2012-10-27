@@ -6,6 +6,7 @@ import re
 import sys
 
 import baker
+from eagertools import emap
 import pkg_resources
 from pykka.actor import Actor
 from pykka.gevent import GeventActor
@@ -143,7 +144,7 @@ def scan_command(dir, filename='STAG', verbose=False):
                     'filename': os.path.join(dirpath, fname)
         })
 
-        consume(map(dispatch_file, os.walk(dir)))
+        emap(dispatch_file, os.walk(dir))
 
         # Shut everything down.
         ActorRegistry.stop_all()

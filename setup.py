@@ -31,6 +31,7 @@ setup(
 
     install_requires=[
         'baker',
+        'eagertools',
         'gevent',
         'pykka',
         'sqlalchemy',
