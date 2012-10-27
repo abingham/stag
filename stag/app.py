@@ -52,14 +52,14 @@ def parser_plugins():
     name='scan',
     params={
         'directory': 'The directory to scan',
-        'filename': 'The output file.',
+        'tagfile': 'The output file.',
         'verbose': 'Whether to generate verbose logging output.'})
-def scan_command(directory, filename='STAG.sqlite', verbose=False):
+def scan_command(directory, tagfile='STAG.sqlite', verbose=False):
     """Scan a directory tree for definitions and references."""
 
     init_logging(verbose)
 
-    with Storage(filename) as s:
+    with Storage(tagfile) as s:
         s.clear_defs()
 
         storage = StorageActor.start(s)
@@ -88,14 +88,14 @@ def scan_command(directory, filename='STAG.sqlite', verbose=False):
     name='find_defs',
     params={
         'name': 'The name to search.',
-        'filename': 'The file containing tag information',
+        'tagfile': 'The file containing tag information',
         'verbose': 'Whether to generate verbose logging output.'})
-def find_definitions_command(name, filename='STAG.sqlite', verbose=False):
+def find_definitions_command(name, tagfile='STAG.sqlite', verbose=False):
     """Find definitions for a name."""
 
     init_logging(verbose)
 
-    with Storage(filename) as s:
+    with Storage(tagfile) as s:
         for name, filename, lineno in s.find_definitions(name):
             print('{}:{}: {}'.format(
                 filename, lineno, name))
@@ -104,14 +104,14 @@ def find_definitions_command(name, filename='STAG.sqlite', verbose=False):
     name='match_defs',
     params={
         'pattern': 'The pattern for which to search.',
-        'filename': 'The file containing the tag information.',
+        'tagfile': 'The file containing the tag information.',
         'verbose': 'Whether to generate verbose logging output.'})
-def match_definitions_command(pattern, filename='STAG.sqlite', verbose=False):
+def match_definitions_command(pattern, tagfile='STAG.sqlite', verbose=False):
     """Find definitions matching a regular expression."""
 
     init_logging(verbose)
 
-    with Storage(filename) as s:
+    with Storage(tagfile) as s:
         for name, filename, lineno in s.definitions():
             if re.match(pattern, name):
                 print('{}:{}: {}'.format(
@@ -121,14 +121,14 @@ def match_definitions_command(pattern, filename='STAG.sqlite', verbose=False):
     name='find_refs',
     params={
         'name': 'The name to search.',
-        'filename': 'The file containing tag information',
+        'tagfile': 'The file containing tag information',
         'verbose': 'Whether to generate verbose logging output.'})
-def find_references_command(name, filename='STAG.sqlite', verbose=False):
+def find_references_command(name, tagfile='STAG.sqlite', verbose=False):
     """Find references to a name."""
 
     init_logging(verbose)
 
-    with Storage(filename) as s:
+    with Storage(tagfile) as s:
         for name, filename, lineno in s.find_references(name):
             print('{}:{}: {}'.format(
                 filename, lineno, name))
@@ -137,14 +137,14 @@ def find_references_command(name, filename='STAG.sqlite', verbose=False):
     name='match_refs',
     params={
         'pattern': 'The pattern for which to search.',
-        'filename': 'The file containing the tag information.',
+        'tagfile': 'The file containing the tag information.',
         'verbose': 'Whether to generate verbose logging output.'})
-def match_references_command(pattern, filename='STAG.sqlite', verbose=False):
+def match_references_command(pattern, tagfile='STAG.sqlite', verbose=False):
     """Find references matching a regular expression."""
 
     init_logging(verbose)
 
-    with Storage(filename) as s:
+    with Storage(tagfile) as s:
         for name, filename, lineno in s.references():
             if re.match(pattern, name):
                 print('{}:{}: {}'.format(
