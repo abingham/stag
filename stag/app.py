@@ -21,6 +21,7 @@ class DispatcherActor(GeventActor):
     """Actor for dispatching filenames to the proper parser."""
 
     def __init__(self, parser_map):
+        super(DispatcherActor, self).__init__()
         self.parser_map = parser_map
 
     def find_parser(self, filename):
@@ -53,6 +54,7 @@ class ParserActor(GeventActor):
     """Actor for parsing files."""
 
     def __init__(self, parser, storage):
+        super(ParserActor, self).__init__()
         self.parser = parser
         self.storage = storage
 
@@ -82,6 +84,7 @@ class StorageActor(GeventActor):
     """Actor for managing storage."""
 
     def __init__(self, storage):
+        super(StorageActor, self).__init__()
         self.storage = storage
 
     def on_receive(self, message):
