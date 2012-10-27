@@ -1,3 +1,7 @@
+#pylint: disable=W0232
+
+"""Provides the interface for Parser plugins."""
+
 class ParserPlugin:
     """This defines the interface for plugins that provide parsers for
     stag.

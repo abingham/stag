@@ -1,3 +1,8 @@
+#pylint: disable=W0232
+
+"""Provides the Parser interface definition.
+"""
+
 class Parser:
     "Interface definition for parsers."
 
