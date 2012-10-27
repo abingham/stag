@@ -33,7 +33,9 @@ setup(
         'baker',
         'eagertools',
         'gevent',
+        'nose',
         'pykka',
+        'pylint',
         'sqlalchemy',
     ],
 )
