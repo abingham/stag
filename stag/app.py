@@ -1,5 +1,8 @@
-from itertools import chain
-import fnmatch
+# pylint: disable=C0103
+
+"""Top-level application for stag.
+"""
+
 import logging
 import os
 import re
@@ -8,101 +11,21 @@ import sys
 import baker
 from eagertools import emap
 import pkg_resources
-from pykka.actor import Actor
-from pykka.gevent import GeventActor
 from pykka.registry import ActorRegistry
 
+from stag.actor import DispatcherActor, ParserActor, StorageActor
 from stag.storage.sqlalchemy_storage import SqlAlchemyStorage as Storage
-from stag.util import consume
 
 log = logging.getLogger(__file__)
 
-class DispatcherActor(GeventActor):
-    """Actor for dispatching filenames to the proper parser."""
-
-    def __init__(self, parser_map):
-        super(DispatcherActor, self).__init__()
-        self.parser_map = parser_map
-
-    def find_parser(self, filename):
-        for patterns, parser in self.parser_map:
-            for pattern in patterns:
-                if fnmatch.fnmatch(filename, pattern):
-                    log.info('{} matched pattern {} for parser {}'.format(
-                        filename, pattern, parser))
-                    return parser
-
-    def dispatch(self, filename):
-        parser = self.find_parser(filename)
-        if parser:
-            parser.tell({
-                'command': 'parse',
-                'filename': filename
-                })
-        else:
-            log.info('No parser for filename: {}'.format(filename))
-
-    def on_receive(self, message):
-        if message.get('command') == 'dispatch':
-            self.dispatch(message['filename'])
-
-        else:
-            log.error('Dispatcher received unexpected message type: {}'.format(
-                message))
-
-class ParserActor(GeventActor):
-    """Actor for parsing files."""
-
-    def __init__(self, parser, storage):
-        super(ParserActor, self).__init__()
-        self.parser = parser
-        self.storage = storage
-
-    def on_receive(self, message):
-        if message.get('command') == 'parse':
-            fname = message['filename']
-            self.parser.set_file(fname)
-            for d in self.parser.definitions():
-                self.storage.tell({
-                    'command': 'store_def',
-                    'name': d[0],
-                    'filename': fname,
-                    'lineno': d[1]
-                })
-            for r in self.parser.references():
-                self.storage.tell({
-                    'command': 'store_ref',
-                    'name': r[0],
-                    'filename': fname,
-                    'lineno': r[1]
-                })
-        else:
-            log.error('ParserActor received unexpected message: {}'.format(
-                message))
-
-class StorageActor(GeventActor):
-    """Actor for managing storage."""
-
-    def __init__(self, storage):
-        super(StorageActor, self).__init__()
-        self.storage = storage
-
-    def on_receive(self, message):
-        if message.get('command') == 'store_def':
-            self.storage.add_def(
-                message['name'],
-                message['filename'],
-                message['lineno'])
-        elif message.get('command') == 'store_ref':
-            self.storage.add_ref(
-                message['name'],
-                message['filename'],
-                message['lineno'])
-        else:
-            log.error('StorageActor received unexpeted message: {}'.format(
-                message))
-
 def init_logging(verbose):
+    """Initialize the logging system.
+
+    Args:
+      verbose: Whether detailed logging should be enabled.
+
+    """
+
     if verbose:
         level = logging.INFO
     else:
@@ -113,6 +36,8 @@ def init_logging(verbose):
         stream=sys.stdout)
 
 def parser_plugins():
+    """Generate the sequence of 'stag.parser' plugins."""
+
     log.info('Loading parser plugins.')
 
     for entry_point in pkg_resources.iter_entry_points('stag.parser'):
@@ -123,8 +48,15 @@ def parser_plugins():
         plugin = plugin_class()
         yield plugin
 
-@baker.command(name='scan')
-def scan_command(dir, filename='STAG', verbose=False):
+@baker.command(
+    name='scan',
+    params={
+        'directory': 'The directory to scan',
+        'filename': 'The output file.',
+        'verbose': 'Whether to generate verbose logging output.'})
+def scan_command(directory, filename='STAG.sqlite', verbose=False):
+    """Scan a directory tree for definitions and references."""
+
     init_logging(verbose)
 
     with Storage(filename) as s:
@@ -138,22 +70,29 @@ def scan_command(dir, filename='STAG', verbose=False):
 
         dispatcher = DispatcherActor.start(parser_map)
 
-        # Send results of os.walk to the dispatcher
         def dispatch_file(args):
-            dirpath, dirnames, filenames = args
+            "Send results of os.walk to the dispatcher."
+            dirpath, _, filenames = args
             for fname in filenames:
                 dispatcher.tell({
                     'command': 'dispatch',
                     'filename': os.path.join(dirpath, fname)
         })
 
-        emap(dispatch_file, os.walk(dir))
+        emap(dispatch_file, os.walk(directory))
 
         # Shut everything down.
         ActorRegistry.stop_all()
 
-@baker.command(name='find_defs')
-def find_definitions_command(name, filename='STAG', verbose=False):
+@baker.command(
+    name='find_defs',
+    params={
+        'name': 'The name to search.',
+        'filename': 'The file containing tag information',
+        'verbose': 'Whether to generate verbose logging output.'})
+def find_definitions_command(name, filename='STAG.sqlite', verbose=False):
+    """Find definitions for a name."""
+
     init_logging(verbose)
 
     with Storage(filename) as s:
@@ -161,8 +100,15 @@ def find_definitions_command(name, filename='STAG', verbose=False):
             print('{}:{}: {}'.format(
                 filename, lineno, name))
 
-@baker.command(name='match_defs')
-def match_definitions_command(pattern, filename='STAG', verbose=False):
+@baker.command(
+    name='match_defs',
+    params={
+        'pattern': 'The pattern for which to search.',
+        'filename': 'The file containing the tag information.',
+        'verbose': 'Whether to generate verbose logging output.'})
+def match_definitions_command(pattern, filename='STAG.sqlite', verbose=False):
+    """Find definitions matching a regular expression."""
+
     init_logging(verbose)
 
     with Storage(filename) as s:
@@ -171,8 +117,15 @@ def match_definitions_command(pattern, filename='STAG', verbose=False):
                 print('{}:{}: {}'.format(
                     filename, lineno, name))
 
-@baker.command(name='find_refs')
-def find_references_command(name, filename='STAG', verbose=False):
+@baker.command(
+    name='find_refs',
+    params={
+        'name': 'The name to search.',
+        'filename': 'The file containing tag information',
+        'verbose': 'Whether to generate verbose logging output.'})
+def find_references_command(name, filename='STAG.sqlite', verbose=False):
+    """Find references to a name."""
+
     init_logging(verbose)
 
     with Storage(filename) as s:
@@ -180,8 +133,15 @@ def find_references_command(name, filename='STAG', verbose=False):
             print('{}:{}: {}'.format(
                 filename, lineno, name))
 
-@baker.command(name='match_refs')
-def match_references_command(pattern, filename='STAG', verbose=False):
+@baker.command(
+    name='match_refs',
+    params={
+        'pattern': 'The pattern for which to search.',
+        'filename': 'The file containing the tag information.',
+        'verbose': 'Whether to generate verbose logging output.'})
+def match_references_command(pattern, filename='STAG.sqlite', verbose=False):
+    """Find references matching a regular expression."""
+
     init_logging(verbose)
 
     with Storage(filename) as s:
@@ -191,6 +151,7 @@ def match_references_command(pattern, filename='STAG', verbose=False):
                     filename, lineno, name))
 
 def main():
+    """Application main."""
     baker.run()
 
 if __name__ == '__main__':
