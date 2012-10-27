@@ -1,7 +1,7 @@
 import os
 import unittest
 
-# from stag import app
+from stag import app
 
 class Tests(unittest.TestCase):
     def setUp(self):
@@ -13,9 +13,8 @@ class Tests(unittest.TestCase):
         except OSError:
             pass
 
-    @unittest.skip('strange import error...')
     def test_scan_defs(self):
-        stag.app.scan_definitions_command(
+        app.scan_command(
             os.path.join(
                 os.path.split(__file__)[0],
                 '..'),
