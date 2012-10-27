@@ -15,14 +15,27 @@
   :type '(string)
   :group 'stag)
 
+(defcustom stag-tag-file "STAG.sqlite"
+  "The name of the file containing tag information."
+  :type '(string)
+  :group 'stag)
+
 (defun stag-find-defs (name)
+  "Find definitions in a stag tag file."
   (interactive
    (list
     (read-string "Name: ")))
-  ; TODO: Allow user to set tag file
   (let ((buff-name "*stag defs*"))
-    (shell-command (format "%s find_defs %s" stag-program name) buff-name)
+    (shell-command 
+     (format "%s find_defs --tagfile=%s %s" 
+	     stag-program 
+	     stag-tag-file
+	     name) 
+     buff-name)
     (switch-to-buffer buff-name)))
+
+; TODO: Rescan
+; TODO: Find refs
 
 ;;;###autoload(require 'stag)
 (provide 'stag)
