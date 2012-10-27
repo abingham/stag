@@ -14,9 +14,10 @@ log = logging.getLogger(__file__)
 class DispatcherActor(GeventActor):
     """Actor for dispatching filenames to the proper parser.
 
-    ``parser_map`` should be a sequence of tuples of the form
-    (list-of-patterns, ParserActor) which defines how filename
-    patterns are mapped to Parsers.
+    Args:
+      parser_map: A sequence of tuples of the form (list-of-patterns,
+        ParserActor) which defines how filename patterns are mapped to
+        Parsers.
 
     """
 
@@ -25,10 +26,14 @@ class DispatcherActor(GeventActor):
         self.parser_map = parser_map
 
     def find_parser(self, filename):
-        """Given a filename, find a parser registered for it. Returns
-        a ``Parser`` instance or ``None``.
+        """Find a parser for ``filename``.
 
+        Args:
+          filename: A file name.
+
+        Returns: A ``ParserActor`` instance.
         """
+
         for patterns, parser in self.parser_map:
             for pattern in patterns:
                 if fnmatch.fnmatch(filename, pattern):
@@ -40,7 +45,11 @@ class DispatcherActor(GeventActor):
         """Map ``filename`` to a parser and tell the parser to parse
         it.
 
+        Args:
+          filename: A file name.
+
         """
+
         parser = self.find_parser(filename)
         if parser:
             parser.tell({
@@ -51,7 +60,13 @@ class DispatcherActor(GeventActor):
             log.info('No parser for filename: {}'.format(filename))
 
     def on_receive(self, message):
-        """Process a pykka message."""
+        """Process a pykka message.
+
+        Args:
+          message: A pykka message.
+
+        """
+
         if message.get('command') == 'dispatch':
             self.dispatch(message['filename'])
 
@@ -62,9 +77,10 @@ class DispatcherActor(GeventActor):
 class ParserActor(GeventActor):
     """Actor for parsing files.
 
-    ``parser`` is a Parser subclass used to parse input files. The
-    results of the parse are stored using ``storage``, a
-    StorageActor.
+    Args:
+      parser: A ``Parser`` subclass used to parse input files. The
+        results of the parse are stored using ``storage``, a
+        ``StorageActor``.
 
     """
 
@@ -74,7 +90,13 @@ class ParserActor(GeventActor):
         self.storage = storage
 
     def on_receive(self, message):
-        """Process a pykka message."""
+        """Process a pykka message.
+
+        Args:
+          message: A pykka message.
+
+        """
+
         if message.get('command') == 'parse':
             fname = message['filename']
             self.parser.set_file(fname)
@@ -99,7 +121,9 @@ class ParserActor(GeventActor):
 class StorageActor(GeventActor):
     """Actor for managing storage.
 
-    ``storage`` is a Storage subclass.
+    Args:
+      storage: ``Storage`` subclass.
+
     """
 
     def __init__(self, storage):
@@ -107,7 +131,12 @@ class StorageActor(GeventActor):
         self.storage = storage
 
     def on_receive(self, message):
-        """Process a pykka message."""
+        """Process a pykka message.
+
+        Args:
+          message: A pykka message.
+        """
+
         if message.get('command') == 'store_def':
             self.storage.add_def(
                 message['name'],
