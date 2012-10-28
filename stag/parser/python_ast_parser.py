@@ -1,3 +1,10 @@
+# pylint: disable=C0103
+
+"""Provides a parser for Python files based on Python's standard `ast`
+module.
+
+"""
+
 import ast
 
 class Visitor(ast.NodeVisitor):
@@ -13,11 +20,13 @@ class Visitor(ast.NodeVisitor):
         self.current_call = None
 
     def visit_FunctionDef(self, node):
+        "Visit function definitions."
         func_name = '.'.join(self.classes + [node.name])
         self.definitions.append((func_name, node.lineno))
         self.generic_visit(node)
 
     def visit_ClassDef(self, node):
+        "Visit class definitions."
         class_name = '.'.join(self.classes + [node.name])
         self.definitions.append((class_name, node.lineno))
         self.classes.append(node.name)
@@ -25,16 +34,19 @@ class Visitor(ast.NodeVisitor):
         self.classes = self.classes[:-1]
 
     def visit_Call(self, node):
+        "Visit call sites."
         self.current_call = node
         self.generic_visit(node)
 
     def visit_Attribute(self, node):
+        "Visit attribute accesses."
         if self.current_call:
             self.references.append((node.attr, node.lineno))
             self.current_call = None
         self.generic_visit(node)
 
     def visit_Name(self, node):
+        "Visit name uses."
         if self.current_call:
             self.references.append((node.id, node.lineno))
             self.current_call = None
@@ -50,8 +62,10 @@ class Parser:
 
     @property
     def ast(self):
+        "The AST top node for ``fname``."
         if self._ast is None:
-            assert self.fname is not None, 'set_file() must be called before rebuilding AST.'
+            assert self.fname is not None, 'set_file() must be ' \
+                                           'called before rebuilding AST.'
 
             with open(self.fname) as f:
                 source = f.read()
@@ -61,6 +75,7 @@ class Parser:
 
     @property
     def visitor(self):
+        "The ``Visitor`` used by this parser."
         if self._visitor is None:
             self._visitor = Visitor()
             self._visitor.visit(self.ast)
@@ -68,15 +83,25 @@ class Parser:
 
     @property
     def fname(self):
+        "The name of the file currently being parsed."
         return self._fname
 
     def set_file(self, fname):
+        """Set the name of the file to be parsed.
+
+        Args:
+          fname: The name of the file.
+
+        """
+
         self._fname = fname
         self._ast = None
         self._visitor = None
 
     def definitions(self):
+        """Generate the collection of definitions found in ``fname``."""
         return iter(self.visitor.definitions)
 
     def references(self):
+        """Generate the collection of references found on ``fname``."""
         return iter(self.visitor.references)
