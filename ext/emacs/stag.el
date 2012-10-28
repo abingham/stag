@@ -8,6 +8,8 @@
 ;;
 ;; Just read the code.
 
+; TODO: A better intro comment.
+
 ;;; Code:
 
 (defcustom stag-program "stag"
