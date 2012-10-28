@@ -33,6 +33,7 @@ setup(
         'baker',
         'eagertools',
         'gevent',
+        'pathlib',
         'pykka',
         'pylint',
         'sqlalchemy',

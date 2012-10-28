@@ -16,6 +16,7 @@ from pykka.registry import ActorRegistry
 from stag.actor import DispatcherActor, ParserActor, StorageActor
 from stag.storage.manager import StorageManager
 from stag.storage.sqlalchemy_storage import SqlAlchemyStorage as Storage
+from stag.util import seek_file_up
 
 log = logging.getLogger(__file__)
 
@@ -48,6 +49,22 @@ def parser_plugins():
 
         plugin = plugin_class()
         yield plugin
+
+def find_tagfile(tagfile):
+    """Search in the current directory and all ancestors for
+    ``tagfile``.
+
+    If ``tagfile`` is not found, this will log a warning and exit.
+
+    """
+
+    found_tagfile = seek_file_up(tagfile)
+    if tagfile is None:
+        log.warning('Tagfile {} not found. Exiting.'.format(tagfile))
+        sys.exit(1)
+
+    log.info('Using tagfile {}'.format(found_tagfile))
+    return found_tagfile
 
 @baker.command(
     name='scan',
