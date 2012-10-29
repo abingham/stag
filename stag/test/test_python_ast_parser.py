@@ -81,7 +81,7 @@ class Foo:
      pass
         ''')
         self.assertIn(
-            ('Foo.bar', 3),
+            ('bar', 3),
             v.definitions)
 
     def test_method_and_func(self):
@@ -95,7 +95,7 @@ def func2(): pass
         defs = (
             ('func1', 2),
             ('Foo', 3),
-            ('Foo.meth1', 4),
+            ('meth1', 4),
             ('func2', 5))
 
         for d in defs:
@@ -111,8 +111,8 @@ class Foo:
 ''')
         defs = (
             ('Foo', 2),
-            ('Foo.Bar', 3),
-            ('Foo.Bar.baz', 4),
+            ('Bar', 3),
+            ('baz', 4),
             )
         for d in defs:
             self.assertIn(

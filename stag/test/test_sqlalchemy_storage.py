@@ -1,6 +1,7 @@
 import os
 import unittest
 
+from stag.storage.manager import StorageManager
 from stag.storage.sqlalchemy_storage import SqlAlchemyStorage
 
 class Tests(unittest.TestCase):
@@ -14,14 +15,13 @@ class Tests(unittest.TestCase):
             pass
 
     def test_construction(self):
-        with SqlAlchemyStorage(self.fname) as s:
-            pass
+        s = SqlAlchemyStorage(self.fname)
 
     def _populate(self, s):
         values = [
-            ('foo', 'sample/bar.py', 1),
-            ('llama', 'cool/stuff/animal.py', 42),
-            ('DeathStar', 'empire/fleet/space_stations.cpp', 421),
+            ('foo', 'sample/bar.py', 1, 'some source code foo'),
+            ('llama', 'cool/stuff/animal.py', 42, 'some source code llama'),
+            ('DeathStar', 'empire/fleet/space_stations.cpp', 421, 'some source code DeathStar'),
         ]
 
 
@@ -38,11 +38,11 @@ class Tests(unittest.TestCase):
             self.assertIn(d, values)
 
     def test_add_def(self):
-        with SqlAlchemyStorage(self.fname) as s:
+        with StorageManager(SqlAlchemyStorage(self.fname)) as s:
             self._populate(s)
 
     def test_clear_defs(self):
-        with SqlAlchemyStorage(self.fname) as s:
+        with StorageManager(SqlAlchemyStorage(self.fname)) as s:
             self._populate(s)
             s.clear_defs()
             self.assertEqual(

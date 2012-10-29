@@ -14,6 +14,7 @@ import pkg_resources
 from pykka.registry import ActorRegistry
 
 from stag.actor import DispatcherActor, ParserActor, StorageActor
+from stag.storage.manager import StorageManager
 from stag.storage.sqlalchemy_storage import SqlAlchemyStorage as Storage
 
 log = logging.getLogger(__file__)
@@ -59,7 +60,7 @@ def scan_command(directory, tagfile='STAG.sqlite', verbose=False):
 
     init_logging(verbose)
 
-    with Storage(tagfile) as s:
+    with StorageManager(Storage(tagfile)) as s:
         s.clear_defs()
 
         storage = StorageActor.start(s)
@@ -95,7 +96,7 @@ def find_definitions_command(name, tagfile='STAG.sqlite', verbose=False):
 
     init_logging(verbose)
 
-    with Storage(tagfile) as s:
+    with StorageManager(Storage(tagfile)) as s:
         for name, filename, lineno, source in s.find_definitions(name):
             print('{}:{}: {}'.format(
                 filename, lineno, source))
@@ -111,7 +112,7 @@ def match_definitions_command(pattern, tagfile='STAG.sqlite', verbose=False):
 
     init_logging(verbose)
 
-    with Storage(tagfile) as s:
+    with StorageManager(Storage(tagfile)) as s:
         for name, filename, lineno, source in s.definitions():
             if re.match(pattern, name):
                 print('{}:{}: {}'.format(
@@ -128,7 +129,7 @@ def find_references_command(name, tagfile='STAG.sqlite', verbose=False):
 
     init_logging(verbose)
 
-    with Storage(tagfile) as s:
+    with StorageManager(Storage(tagfile)) as s:
         for name, filename, lineno, source in s.find_references(name):
             print('{}:{}: {}'.format(
                 filename, lineno, source))
@@ -144,7 +145,7 @@ def match_references_command(pattern, tagfile='STAG.sqlite', verbose=False):
 
     init_logging(verbose)
 
-    with Storage(tagfile) as s:
+    with StorageManager(Storage(tagfile)) as s:
         for name, filename, lineno, source in s.references():
             if re.match(pattern, name):
                 print('{}:{}: {}'.format(

@@ -2,6 +2,15 @@
 
 class IndexStorage:
     "Interface definition for index storage."
+
+    def connect(self):
+        "Connect to low-level storage."
+        pass
+
+    def close(self):
+        "Close connection to low-level storage."
+        pass
+
     def clear_defs(self):
         "Clear out storage."
         pass
@@ -51,10 +60,4 @@ class IndexStorage:
           (reference-name, filename, lineno, source).
 
         """
-        pass
-
-    def __enter__(self):
-        pass
-
-    def __exit__(self, t, b, tb):
         pass

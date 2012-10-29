@@ -96,9 +96,3 @@ class SqlAlchemyStorage:
         for r in self.session.query(Reference).filter_by(name=name):
             yield (r.name, r.filename, r.lineno, r.source)
 
-    def __enter__(self):
-        self.connect()
-        return self
-
-    def __exit__(self, t, v, tb):
-        self.close()
