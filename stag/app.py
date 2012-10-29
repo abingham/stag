@@ -96,9 +96,9 @@ def find_definitions_command(name, tagfile='STAG.sqlite', verbose=False):
     init_logging(verbose)
 
     with Storage(tagfile) as s:
-        for name, filename, lineno in s.find_definitions(name):
+        for name, filename, lineno, source in s.find_definitions(name):
             print('{}:{}: {}'.format(
-                filename, lineno, name))
+                filename, lineno, source))
 
 @baker.command(
     name='match_defs',
@@ -112,10 +112,10 @@ def match_definitions_command(pattern, tagfile='STAG.sqlite', verbose=False):
     init_logging(verbose)
 
     with Storage(tagfile) as s:
-        for name, filename, lineno in s.definitions():
+        for name, filename, lineno, source in s.definitions():
             if re.match(pattern, name):
                 print('{}:{}: {}'.format(
-                    filename, lineno, name))
+                    filename, lineno, source))
 
 @baker.command(
     name='find_refs',
@@ -129,9 +129,9 @@ def find_references_command(name, tagfile='STAG.sqlite', verbose=False):
     init_logging(verbose)
 
     with Storage(tagfile) as s:
-        for name, filename, lineno in s.find_references(name):
+        for name, filename, lineno, source in s.find_references(name):
             print('{}:{}: {}'.format(
-                filename, lineno, name))
+                filename, lineno, source))
 
 @baker.command(
     name='match_refs',
@@ -145,10 +145,10 @@ def match_references_command(pattern, tagfile='STAG.sqlite', verbose=False):
     init_logging(verbose)
 
     with Storage(tagfile) as s:
-        for name, filename, lineno in s.references():
+        for name, filename, lineno, source in s.references():
             if re.match(pattern, name):
                 print('{}:{}: {}'.format(
-                    filename, lineno, name))
+                    filename, lineno, source))
 
 def main():
     """Application main."""

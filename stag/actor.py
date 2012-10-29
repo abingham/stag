@@ -5,6 +5,7 @@
 """
 
 import fnmatch
+import linecache
 import logging
 
 from pykka.gevent import GeventActor
@@ -105,14 +106,16 @@ class ParserActor(GeventActor):
                     'command': 'store_def',
                     'name': defn[0],
                     'filename': fname,
-                    'lineno': defn[1]
+                    'lineno': defn[1],
+                    'source': linecache.getline(fname, defn[1]),
                 })
             for refn in self.parser.references():
                 self.storage.tell({
                     'command': 'store_ref',
                     'name': refn[0],
                     'filename': fname,
-                    'lineno': refn[1]
+                    'lineno': refn[1],
+                    'source': linecache.getline(fname, refn[1]),
                 })
         else:
             log.error('ParserActor received unexpected message: {}'.format(
@@ -141,12 +144,14 @@ class StorageActor(GeventActor):
             self.storage.add_def(
                 message['name'],
                 message['filename'],
-                message['lineno'])
+                message['lineno'],
+                message['source'])
         elif message.get('command') == 'store_ref':
             self.storage.add_ref(
                 message['name'],
                 message['filename'],
-                message['lineno'])
+                message['lineno'],
+                message['source'])
         else:
             log.error('StorageActor received unexpeted message: {}'.format(
                 message))

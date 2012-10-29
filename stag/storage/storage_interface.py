@@ -6,28 +6,51 @@ class IndexStorage:
         "Clear out storage."
         pass
 
-    def add_def(self, name, filename, lineno):
+    def add_def(self, name, filename, lineno, source):
         "Add a new definition."
         pass
 
     def definitions(self):
-        "Get iterable of all definitions in storage."
+        """Get iterable of all definitions in storage.
+
+        Each definitions is a tuple of the form:
+
+          (definition-name, filename, lineno, source).
+
+        """
         pass
 
     def find_definitions(self, name):
-        "Get all definitions for a given name."
+        """Get all definitions for a given name.
+
+        Each definitions is a tuple of the form:
+
+          (definition-name, filename, lineno, source).
+
+        """
         pass
 
-    def add_ref(self, name, filename, lineno):
+    def add_ref(self, name, filename, lineno, source):
         "Add a new reference."
         pass
 
     def references(self):
-        "Get iterable of all references in storage."
+        """Get iterable of all references in storage.
+
+        Each reference is a tuple of the form:
+
+          (reference-name, filename, lineno, source).
+        """
         pass
 
     def find_references(self, name):
-        "Get all references to a given name."
+        """Get all references to a given name.
+
+        Each reference is a tuple of the form:
+
+          (reference-name, filename, lineno, source).
+
+        """
         pass
 
     def __enter__(self):

@@ -19,6 +19,7 @@ class Definition(Base):
     name = Column(String)
     filename = Column(String)
     lineno = Column(Integer)
+    source = Column(String)
 
     def __repr__(self):
         return '<Definition("{}", "{}", "{}")>'.format(
@@ -31,6 +32,7 @@ class Reference(Base):
     name = Column(String)
     filename = Column(String)
     lineno = Column(String)
+    source = Column(String)
 
     def __repr__(self):
         return '<Reference("{}", "{}", "{}")>'.format(
@@ -54,7 +56,7 @@ class SqlAlchemyStorage:
         for d in self.session.query(Definition).all():
             self.session.delete(d)
 
-    def add_def(self, name, filename, lineno):
+    def add_def(self, name, filename, lineno, source):
         log.info(
             'SqlAlchemyStorage.add_def(name={}, filename={}, lineno={})'.format(
                 name, filename, lineno))
@@ -63,17 +65,18 @@ class SqlAlchemyStorage:
             Definition(
                 name=name,
                 filename=filename,
-                lineno=lineno))
+                lineno=lineno,
+                source=source))
 
     def definitions(self):
         for d in self.session.query(Definition).all():
-            yield (d.name, d.filename, d.lineno)
+            yield (d.name, d.filename, d.lineno, d.source)
 
     def find_definitions(self, name):
         for d in self.session.query(Definition).filter_by(name=name):
-            yield (d.name, d.filename, d.lineno)
+            yield (d.name, d.filename, d.lineno, d.source)
 
-    def add_ref(self, name, filename, lineno):
+    def add_ref(self, name, filename, lineno, source):
         log.info(
             'SqlAlchemyStorage.add_def(name={}, filename={}, lineno={})'.format(
                 name, filename, lineno))
@@ -82,15 +85,16 @@ class SqlAlchemyStorage:
             Reference(
                 name=name,
                 filename=filename,
-                lineno=lineno))
+                lineno=lineno,
+                source=source))
 
     def references(self):
         for r in self.session.query(Reference).all():
-            yield (r.name, r.filename, r.lineno)
+            yield (r.name, r.filename, r.lineno, r.source)
 
     def find_references(self, name):
         for r in self.session.query(Reference).filter_by(name=name):
-            yield (r.name, r.filename, r.lineno)
+            yield (r.name, r.filename, r.lineno, r.source)
 
     def __enter__(self):
         self.connect()
