@@ -21,14 +21,14 @@ class Visitor(ast.NodeVisitor):
 
     def visit_FunctionDef(self, node):
         "Visit function definitions."
-        func_name = '.'.join(self.classes + [node.name])
-        self.definitions.append((func_name, node.lineno))
+        # func_name = '.'.join(self.classes + [node.name])
+        self.definitions.append((node.name, node.lineno))
         self.generic_visit(node)
 
     def visit_ClassDef(self, node):
         "Visit class definitions."
-        class_name = '.'.join(self.classes + [node.name])
-        self.definitions.append((class_name, node.lineno))
+        # class_name = '.'.join(self.classes + [node.name])
+        self.definitions.append((node.name, node.lineno))
         self.classes.append(node.name)
         self.generic_visit(node)
         self.classes = self.classes[:-1]
